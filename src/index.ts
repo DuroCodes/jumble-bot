@@ -8,6 +8,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
   ],
+  allowedMentions: { repliedUser: false },
 });
 
 await makeDependencies(({ add }) => {

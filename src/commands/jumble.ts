@@ -68,7 +68,7 @@ export default commandModule({
       .setEmoji("🔀")
       .setStyle(ButtonStyle.Primary);
 
-    const jumbleMsg = await ctx.channel!.send({
+    const jumbleMsg = await ctx.reply({
       embeds: [
         embeds.jumble({
           description,
