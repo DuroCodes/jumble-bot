@@ -5,7 +5,7 @@ import { formatNum } from "./embeds";
 
 const LASTFM_BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 
-const UserSchema = z.object({
+export const UserSchema = z.object({
   user: z.object({
     name: z.string(),
     realname: z.string().nullable(),
