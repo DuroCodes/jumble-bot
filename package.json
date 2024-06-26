@@ -1,0 +1,31 @@
+{
+  "name": "ts-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "sern build",
+    "start": "bun run src/index.ts",
+    "install": "sern build"
+  },
+  "keywords": [
+    "typescript",
+    "sern",
+    "discord.js"
+  ],
+  "dependencies": {
+    "@prisma/client": "^5.16.0",
+    "@sern/handler": "^3.0.3",
+    "@types/bun": "^1.1.5",
+    "discord.js": "latest",
+    "dotenv": "^16.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.25",
+    "prisma": "^5.16.0",
+    "typescript": "^5.0"
+  },
+  "type": "module"
+}
