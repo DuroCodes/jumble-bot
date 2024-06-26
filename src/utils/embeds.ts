@@ -1,8 +1,14 @@
-import { ColorResolvable, Colors, EmbedBuilder } from "discord.js";
+import {
+  ColorResolvable,
+  Colors,
+  EmbedBuilder,
+  EmbedFooterOptions,
+} from "discord.js";
 
 interface EmbedOptions {
   title?: string;
   color?: ColorResolvable;
+  footer?: EmbedFooterOptions;
   description: string;
 }
 
@@ -10,26 +16,42 @@ export const emoji = {
   correct: "<:icons_Correct:958708040163532870>",
   wrong: "<:icons_Wrong:958708043565113405>",
   bulb: "<:icons_bulb:1132397537807044618>",
+  exclamation: "<:icons_exclamation:958708053832777809>",
 };
 
 export const embeds = {
-  error: ({ title, description, color }: EmbedOptions) =>
-    new EmbedBuilder()
+  error: ({ title, description, color, footer }: EmbedOptions) => {
+    const embed = new EmbedBuilder()
       .setTitle(`${emoji.wrong} ${title ?? "Error"}`)
-      .setDescription(description)
-      .setColor(color ?? Colors.Red),
+      .setDescription(removeLeftPad(description))
+      .setColor(color ?? Colors.Red);
 
-  success: ({ title, description, color }: EmbedOptions) =>
-    new EmbedBuilder()
+    if (footer) embed.setFooter(footer);
+
+    return embed;
+  },
+
+  success: ({ title, description, color, footer }: EmbedOptions) => {
+    const embed = new EmbedBuilder()
       .setTitle(`${emoji.correct} ${title ?? "Success"}`)
       .setDescription(removeLeftPad(description))
-      .setColor(color ?? Colors.Green),
+      .setColor(color ?? Colors.Green);
 
-  jumble: ({ description, color }: Omit<EmbedOptions, "title">) =>
-    new EmbedBuilder()
+    if (footer) embed.setFooter(footer);
+
+    return embed;
+  },
+
+  jumble: ({ description, color, footer }: Omit<EmbedOptions, "title">) => {
+    const embed = new EmbedBuilder()
       .setTitle(`${emoji.bulb} Jumble`)
       .setDescription(removeLeftPad(description))
-      .setColor(color ?? Colors.Blue),
+      .setColor(color ?? Colors.Blue);
+
+    if (footer) embed.setFooter(footer);
+
+    return embed;
+  },
 };
 
 export const formatNum = (num: string) =>

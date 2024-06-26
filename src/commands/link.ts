@@ -52,7 +52,7 @@ export default commandModule({
     return ctx.reply({
       embeds: [
         embeds.success({
-          description: `Successfully linked your last.fm account to \`${ctx.user.username}\``,
+          description: `Successfully linked your last.fm account to \`${ctx.user.displayName}\``,
         }),
       ],
     });

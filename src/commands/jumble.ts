@@ -5,17 +5,22 @@ import {
   ButtonBuilder,
   ButtonStyle,
   codeBlock,
+  MessageCollector,
 } from "discord.js";
+import { normalize, shuffleArtist, mostlySame } from "~/utils/string";
 import { embeds, emoji } from "~/utils/embeds";
 import { lastFm } from "~/utils/lastFm";
 import { db } from "~/utils/db";
-import { shuffleArtist } from "~/utils/shuffle";
+
+let messageCollector: MessageCollector | null = null;
 
 export default commandModule({
   type: CommandType.Text,
   alias: ["j"],
   description: "Play a game of jumble using your last.fm artists",
   async execute(ctx) {
+    if (messageCollector) return;
+
     const user = await db.user.findFirst({
       where: { userId: ctx.userId },
     });
@@ -74,22 +79,57 @@ export default commandModule({
       ],
     });
 
+    const collectorTimeStart = Date.now();
     const collector = ctx.channel!.createMessageCollector({
       time: 25_000,
     });
 
+    messageCollector = collector;
+    let guessedCorrectly = false;
+
     collector.on("collect", async (msg) => {
-      if (msg.content.toLowerCase() !== randomArtist.toLowerCase()) {
+      const correct = normalize(randomArtist) === normalize(msg.content);
+
+      if (!correct && mostlySame(randomArtist, msg.content, 1)) {
+        return msg.react(emoji.exclamation);
+      }
+
+      if (!correct) {
         return msg.react(emoji.wrong);
       }
 
+      guessedCorrectly = true;
       collector.stop();
+
       msg.react(emoji.correct);
+
+      const timeTook = ((Date.now() - collectorTimeStart) / 1000).toFixed(2);
+
+      await msg.channel.send({
+        embeds: [
+          embeds.jumble({
+            description: `**${msg.author.displayName}** guessed the artist!\nThe artist was **${randomArtist}**`,
+            color: "Green",
+            footer: {
+              text: `Guessed in ${timeTook}s by ${msg.author.displayName}`,
+              iconURL: msg.author.displayAvatarURL(),
+            },
+          }),
+        ],
+      });
 
       await jumbleMsg.edit({
         embeds: [
           embeds.jumble({
-            description: `**${msg.author.username}** guessed the artist!\nThe artist was **${randomArtist}**`,
+            description: jumbleMsg.embeds[0]
+              .description!.split("\n")
+              .slice(0, -2)
+              .join("\n"),
+            color: "Green",
+            footer: {
+              text: `Guessed in ${timeTook}s by ${msg.author.displayName}`,
+              iconURL: msg.author.displayAvatarURL(),
+            },
           }),
         ],
         components: [],
@@ -102,6 +142,10 @@ export default commandModule({
     });
 
     collector.on("end", async () => {
+      messageCollector = null;
+      
+      if (guessedCorrectly) return;
+
       await jumbleMsg.edit({
         embeds: [
           embeds.jumble({

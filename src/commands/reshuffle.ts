@@ -1,6 +1,6 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { EmbedBuilder } from "discord.js";
-import { shuffleArtist } from "~/utils/shuffle";
+import { shuffleArtist } from "~/utils/string";
 
 export default commandModule({
   type: CommandType.Button,

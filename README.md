@@ -1,5 +1,7 @@
 # LastFM Jumble Discord Bot
 
+<img src="demo.png" style="width: 50%">
+
 A Discord bot that hosts a jumble game based on the top artists of a last.fm user.
 
 The game chooses a random artist from the user's top artists and jumbles the letters of the artist's name.
