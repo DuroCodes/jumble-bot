@@ -5,21 +5,21 @@ import {
   ButtonBuilder,
   ButtonStyle,
   codeBlock,
-  MessageCollector,
+  Snowflake,
 } from "discord.js";
 import { normalize, shuffleArtist, mostlySame } from "~/utils/string";
 import { embeds, emoji } from "~/utils/embeds";
 import { lastFm } from "~/utils/lastFm";
 import { db } from "~/utils/db";
 
-let messageCollector: MessageCollector | null = null;
+const activeCollectors = new Map<Snowflake, boolean>();
 
 export default commandModule({
   type: CommandType.Text,
   alias: ["j"],
   description: "Play a game of jumble using your last.fm artists",
   async execute(ctx) {
-    if (messageCollector) return;
+    if (activeCollectors.get(ctx.channelId)) return;
 
     const user = await db.user.findFirst({
       where: { userId: ctx.userId },
@@ -84,7 +84,7 @@ export default commandModule({
       time: 25_000,
     });
 
-    messageCollector = collector;
+    activeCollectors.set(ctx.channelId, true);
     let guessedCorrectly = false;
 
     collector.on("collect", async (msg) => {
@@ -142,8 +142,8 @@ export default commandModule({
     });
 
     collector.on("end", async () => {
-      messageCollector = null;
-      
+      activeCollectors.delete(ctx.channelId);
+
       if (guessedCorrectly) return;
 
       await jumbleMsg.edit({
