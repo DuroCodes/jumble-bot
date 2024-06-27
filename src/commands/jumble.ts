@@ -102,6 +102,10 @@ export default commandModule({
       const correct = normalize(randomArtist) === normalize(msg.content);
       const errThreshold = Math.floor(randomArtist.length / 8);
 
+      if (!activeCollectors.get(ctx.channelId)?.active) {
+        return collector.stop();
+      }
+
       if (!correct && mostlySame(randomArtist, msg.content, errThreshold)) {
         return msg.react(emoji.exclamation);
       }
