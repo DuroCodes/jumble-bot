@@ -33,11 +33,29 @@ export const levenshtein = (a: string, b: string) => {
   return dist(a.length, b.length);
 };
 
-export const stripAccents = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[$]/g, "s");
+export const stripAccents = (s: string) => {
+  const specialRules: Record<string, string> = {
+    Ø: "O",
+    ø: "o",
+    Æ: "AE",
+    æ: "ae",
+    Œ: "OE",
+    œ: "oe",
+    ß: "ss",
+    Å: "A",
+    å: "a",
+    Þ: "TH",
+    þ: "th",
+    Ð: "D",
+    ð: "d",
+    İ: "I",
+    $: "s",
+  };
+
+  return [...s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
+    .map((c) => specialRules[c] ?? c)
+    .join("");
+};
 
 export const normalize = (s: string) => stripAccents(s).toLowerCase();
 
