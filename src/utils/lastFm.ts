@@ -69,11 +69,11 @@ export const lastFm = {
       : Err("Failed to fetch user, please try with an existing username.");
   },
 
-  getTopArtists: async (user: string) => {
+  getTopArtists: async (user: string, limit = 100) => {
     const res = await zodFetch(
       TopArtistsSchema,
       "Failed to fetch top artists",
-      `${LASTFM_BASE_URL}?method=user.gettopartists&user=${user}&api_key=${process.env.LASTFM_API_KEY}&format=json&limit=100`,
+      `${LASTFM_BASE_URL}?method=user.gettopartists&user=${user}&api_key=${process.env.LASTFM_API_KEY}&format=json&limit=${limit}`,
     );
 
     return res.ok
@@ -96,7 +96,7 @@ export const lastFm = {
   },
 
   getHintsForArtist: async (user: string, artist: string) => {
-    const topArtists = await lastFm.getTopArtists(user);
+    const topArtists = await lastFm.getTopArtists(user, 1000);
     const userArtist = topArtists.ok
       ? Ok(topArtists.value.artist.find((a) => a.name === artist))
       : Err("Artist not found");

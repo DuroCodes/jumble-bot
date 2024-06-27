@@ -34,7 +34,7 @@ export default commandModule({
       });
     }
 
-    const topArtists = await lastFm.getTopArtists(user.lastFmName);
+    const topArtists = await lastFm.getTopArtists(user.lastFmName, 1000);
 
     if (!topArtists.ok) {
       return ctx.reply({
@@ -50,7 +50,7 @@ export default commandModule({
     const hints = await lastFm.getHintsForArtist(user.lastFmName, randomArtist);
     const hintsDesc = hints.ok
       ? hints.value.map((h) => `- ${h}`).join("\n")
-      : `No hints for **${randomArtist}**`;
+      : `No hints found for this artist`;
 
     const description = [
       bold(codeBlock(shuffleArtist(randomArtist.toUpperCase()))),
@@ -100,8 +100,9 @@ export default commandModule({
 
     collector.on("collect", async (msg) => {
       const correct = normalize(randomArtist) === normalize(msg.content);
+      const errThreshold = Math.floor(randomArtist.length / 8);
 
-      if (!correct && mostlySame(randomArtist, msg.content, 1)) {
+      if (!correct && mostlySame(randomArtist, msg.content, errThreshold)) {
         return msg.react(emoji.exclamation);
       }
 
