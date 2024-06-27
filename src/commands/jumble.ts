@@ -148,7 +148,7 @@ export default commandModule({
       });
 
       await db.user.update({
-        where: { userId: ctx.userId },
+        where: { userId: msg.author.id },
         data: { wins: { increment: 1 } },
       });
 
