@@ -5,6 +5,7 @@ import { formatNum } from "./embeds";
 
 const LASTFM_BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 
+export type FmUser = z.infer<typeof UserSchema>;
 export const UserSchema = z.object({
   user: z.object({
     name: z.string(),
@@ -19,6 +20,8 @@ export const UserSchema = z.object({
   }),
 });
 
+export type TopArtists = z.infer<typeof TopArtistsSchema>;
+export type TopArtist = TopArtists["topartists"]["artist"][number];
 export const TopArtistsSchema = z.object({
   topartists: z.object({
     artist: z.array(
@@ -31,11 +34,15 @@ export const TopArtistsSchema = z.object({
             size: z.string(),
           }),
         ),
+        "@attr": z.object({
+          rank: z.string(),
+        }),
       }),
     ),
   }),
 });
 
+export type Artist = z.infer<typeof ArtistSchema>;
 export const ArtistSchema = z.object({
   artist: z.object({
     name: z.string(),
@@ -81,6 +88,23 @@ export const lastFm = {
       : Err(
           "Failed to fetch top artists, please try with an existing username.",
         );
+  },
+
+  getTopArtistsWithWeight: async (
+    user: string,
+    limit = 100,
+    weightFn: (artist: TopArtist) => number | Promise<number>,
+  ) => {
+    const res = await lastFm.getTopArtists(user, limit);
+
+    if (!res.ok) return res;
+
+    const artists = res.value.artist;
+    const weightedArtists = await Promise.all(
+      artists.map(async (a) => [a, await weightFn(a)] as const),
+    );
+
+    return Ok(weightedArtists);
   },
 
   getArtistFromName: async (artist: string) => {

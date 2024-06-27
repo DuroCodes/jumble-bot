@@ -7,10 +7,11 @@ import {
 } from "discord.js";
 import { commandModule, CommandType } from "@sern/handler";
 import { normalize, shuffleArtist, mostlySame } from "~/utils/string";
+import { activeCollectors } from "~/utils/activeCollectors";
 import { embeds, emoji } from "~/utils/embeds";
+import { weightedRandom } from "~/utils/array";
 import { lastFm } from "~/utils/lastFm";
 import { db } from "~/utils/db";
-import { activeCollectors } from "~/utils/activeCollectors";
 
 export default commandModule({
   type: CommandType.Text,
@@ -34,7 +35,11 @@ export default commandModule({
       });
     }
 
-    const topArtists = await lastFm.getTopArtists(user.lastFmName, 1000);
+    const topArtists = await lastFm.getTopArtistsWithWeight(
+      user.lastFmName,
+      1000,
+      (a) => parseInt(a["@attr"].rank) / 1000,
+    );
 
     if (!topArtists.ok) {
       return ctx.reply({
@@ -42,10 +47,7 @@ export default commandModule({
       });
     }
 
-    const artistNames = topArtists.value.artist.map((a) => a.name);
-
-    const randomArtist =
-      artistNames[Math.floor(Math.random() * artistNames.length)];
+    const { name: randomArtist } = weightedRandom(topArtists.value);
 
     const hints = await lastFm.getHintsForArtist(user.lastFmName, randomArtist);
     const hintsDesc = hints.ok
