@@ -133,10 +133,10 @@ export default commandModule({
       await jumbleMsg.edit({
         embeds: [
           embeds.jumble({
-            description: jumbleMsg.embeds[0]
-              .description!.split("\n")
-              .slice(0, -2)
-              .join("\n"),
+            description: jumbleMsg.embeds[0].description!.replace(
+              "\nYou have 25 seconds to guess the artist!",
+              "",
+            ),
             color: "Green",
             footer: {
               text: `Guessed in ${timeTook}s by ${msg.author.displayName}`,
