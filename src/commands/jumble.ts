@@ -109,7 +109,7 @@ export default commandModule({
         return msg.react(emoji.wrong);
       }
 
-      msg.react(emoji.correct);
+      await msg.react(emoji.correct);
 
       const timeTook = (
         (Date.now() - activeCollectors.get(ctx.channelId)!.startTime) /

@@ -22,7 +22,8 @@ LASTFM_API_KEY=<YOUR_LASTFM_API_KEY>
 DATABASE_URL=<MONGODB_URL>
 ```
 
-4. Run the bot with `bun start`
+4. Edit the `src/utils/embeds.ts` to add your own emoji; you can download the emoji from the `emoji` folder
+5. Run the bot with `bun start`
 
 ## Commands
 

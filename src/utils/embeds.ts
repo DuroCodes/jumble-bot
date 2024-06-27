@@ -17,7 +17,6 @@ export const emoji = {
   wrong: "<:icons_Wrong:958708043565113405>",
   bulb: "<:icons_bulb:1132397537807044618>",
   exclamation: "<:icons_exclamation:958708053832777809>",
-  pencil: "<:icons_edit:958708046928961577>",
   delete: "<:icons_delete:958708050250854400>",
   shuffle: "<:icons_repeat:1255691676035453020>",
 };
