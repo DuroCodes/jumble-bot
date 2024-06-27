@@ -34,7 +34,10 @@ export const levenshtein = (a: string, b: string) => {
 };
 
 export const stripAccents = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[$]/g, "s");
 
 export const normalize = (s: string) => stripAccents(s).toLowerCase();
 
