@@ -1,5 +1,6 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { EmbedBuilder } from "discord.js";
+import { formatNum } from "~/utils/embeds";
 import { db } from "~/utils/db";
 
 export default commandModule({
@@ -28,7 +29,9 @@ export default commandModule({
     );
 
     const leaderboard = leaderboardData
-      .map((u) => `${u.position} ${u.user} - **${u.wins} wins**`)
+      .map(
+        (u) => `${u.position} ${u.user} - **${formatNum(`${u.wins}`)} wins**`,
+      )
       .join("\n");
 
     await ctx.reply({
