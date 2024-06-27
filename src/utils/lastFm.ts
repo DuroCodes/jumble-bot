@@ -73,7 +73,7 @@ export const lastFm = {
     const res = await zodFetch(
       TopArtistsSchema,
       "Failed to fetch top artists",
-      `${LASTFM_BASE_URL}?method=user.gettopartists&user=${user}&api_key=${process.env.LASTFM_API_KEY}&format=json`,
+      `${LASTFM_BASE_URL}?method=user.gettopartists&user=${user}&api_key=${process.env.LASTFM_API_KEY}&format=json&limit=100`,
     );
 
     return res.ok

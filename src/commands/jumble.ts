@@ -1,25 +1,23 @@
-import { commandModule, CommandType } from "@sern/handler";
 import {
   ActionRowBuilder,
   bold,
   ButtonBuilder,
   ButtonStyle,
   codeBlock,
-  Snowflake,
 } from "discord.js";
+import { commandModule, CommandType } from "@sern/handler";
 import { normalize, shuffleArtist, mostlySame } from "~/utils/string";
 import { embeds, emoji } from "~/utils/embeds";
 import { lastFm } from "~/utils/lastFm";
 import { db } from "~/utils/db";
-
-const activeCollectors = new Map<Snowflake, boolean>();
+import { activeCollectors } from "~/utils/activeCollectors";
 
 export default commandModule({
   type: CommandType.Text,
   alias: ["j"],
   description: "Play a game of jumble using your last.fm artists",
   async execute(ctx) {
-    if (activeCollectors.get(ctx.channelId)) return;
+    if (activeCollectors.get(ctx.channelId)?.active) return;
 
     const user = await db.user.findFirst({
       where: { userId: ctx.userId },
@@ -65,8 +63,14 @@ export default commandModule({
     const reshuffleButton = new ButtonBuilder()
       .setCustomId("reshuffle")
       .setLabel("Reshuffle")
-      .setEmoji("🔀")
+      .setEmoji(emoji.shuffle)
       .setStyle(ButtonStyle.Primary);
+
+    const giveUpButton = new ButtonBuilder()
+      .setCustomId("giveUp")
+      .setLabel("Give Up")
+      .setEmoji(emoji.delete)
+      .setStyle(ButtonStyle.Danger);
 
     const jumbleMsg = await ctx.reply({
       embeds: [
@@ -75,17 +79,24 @@ export default commandModule({
         }),
       ],
       components: [
-        new ActionRowBuilder<ButtonBuilder>({ components: [reshuffleButton] }),
+        new ActionRowBuilder<ButtonBuilder>({
+          components: [reshuffleButton, giveUpButton],
+        }),
       ],
     });
 
-    const collectorTimeStart = Date.now();
     const collector = ctx.channel!.createMessageCollector({
       time: 25_000,
+      filter: (m) => !m.author.bot,
     });
 
-    activeCollectors.set(ctx.channelId, true);
-    let guessedCorrectly = false;
+    activeCollectors.set(ctx.channelId, {
+      userId: ctx.userId,
+      artist: randomArtist,
+      startTime: Date.now(),
+      guessedCorrectly: false,
+      active: true,
+    });
 
     collector.on("collect", async (msg) => {
       const correct = normalize(randomArtist) === normalize(msg.content);
@@ -98,12 +109,12 @@ export default commandModule({
         return msg.react(emoji.wrong);
       }
 
-      guessedCorrectly = true;
-      collector.stop();
-
       msg.react(emoji.correct);
 
-      const timeTook = ((Date.now() - collectorTimeStart) / 1000).toFixed(2);
+      const timeTook = (
+        (Date.now() - activeCollectors.get(ctx.channelId)!.startTime) /
+        1000
+      ).toFixed(2);
 
       await msg.channel.send({
         embeds: [
@@ -139,17 +150,30 @@ export default commandModule({
         where: { userId: ctx.userId },
         data: { wins: { increment: 1 } },
       });
+
+      activeCollectors.set(ctx.channelId, {
+        ...activeCollectors.get(ctx.channelId)!,
+        guessedCorrectly: true,
+      });
+
+      collector.stop();
     });
 
     collector.on("end", async () => {
-      activeCollectors.delete(ctx.channelId);
+      const active = activeCollectors.get(ctx.channelId);
 
-      if (guessedCorrectly) return;
+      activeCollectors.set(ctx.channelId, {
+        ...activeCollectors.get(ctx.channelId)!,
+        active: false,
+      });
+
+      if (active?.guessedCorrectly || !active?.active) return;
 
       await jumbleMsg.edit({
         embeds: [
           embeds.jumble({
-            description: `No one guessed it!\nThe artist was **${randomArtist}**`,
+            description: `No one guessed it!\nThe artist was **${randomArtist.trim()}**`,
+            color: "Red",
           }),
         ],
         components: [],

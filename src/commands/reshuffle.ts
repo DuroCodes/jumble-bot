@@ -1,5 +1,6 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { EmbedBuilder } from "discord.js";
+import { activeCollectors } from "~/utils/activeCollectors";
 import { shuffleArtist } from "~/utils/string";
 
 export default commandModule({
@@ -11,7 +12,10 @@ export default commandModule({
     const description = embed.description!;
     const artist = description.split("```")[1];
 
-    const shuffled = shuffleArtist(artist.trim());
+    const collector = activeCollectors.get(ctx.channelId);
+    if (!collector) return;
+
+    const shuffled = shuffleArtist(collector.artist.toUpperCase());
     const newDesc = description.replace(artist, shuffled);
 
     await ctx.message.edit({
